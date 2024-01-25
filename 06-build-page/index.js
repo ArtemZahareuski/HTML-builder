@@ -50,7 +50,6 @@ async function copyDir() {
 copyDir();
 
 const pathStyles = pathName.join(__dirname, 'styles'); // указываем путь к папке со стилями
-const pathToStilesFile = pathName.join(pathToProjectDist, 'style'); // указываем путь к файлу в который будем мержить стили
 
 fs.readdir(pathStyles, { withFileTypes: true }, (err, files) => {
   files.forEach(file => {
@@ -66,26 +65,34 @@ fs.readdir(pathStyles, { withFileTypes: true }, (err, files) => {
 
 const pathToTemplate = pathName.join(__dirname, 'template.html'); 
 
-//  function changeTemplate () {
-//   let files = fsPromises.readdir(pathToComponents,  { withFileTypes: true });
-//   // let streamTemplateContent = fs.createReadStream(pathToTemplate);
-//   for(let i = 0; i < files.length; i += 1) {
-//     const filePath = pathName.join(pathToComponents, files[i].name);
-//     if (files[i].isFile() && pathName.extname(filePath) === '.html') {
-//       console.log('hi');
-//       // const fileName = files[i].split('.')[0];
-//       // const fileContent = fsPromises.readFile(filePath.toString());
-//       // templateContent = templateContent.replace(`{{${fileName}}}`, fileContent.toString())
-//     } else {
-//       console.log('error');
-//     }
-//   }
-  
-// }
+let templateContent;
 
-// changeTemplate();
+fs.readFile(pathToTemplate, function(err, data){
+  if (err) {
+      console.log(err);
+  } else {
+      templateContent = data.toString(); 
+      fs.readdir(pathToComponents, { withFileTypes: true }, async (err, files) => {
+        if(err) {
+          console.log(err.message);
+        } else {
+          for(let file of files) {
+            const pathToComponentsFile = pathName.join(pathToComponents, file.name);
+            const readComponentFile = await fsPromises.readFile(pathToComponentsFile, 'utf-8');
+            const fileName = file.name.split('.')[0];
+            templateContent = templateContent.replace(`{{${fileName}}}`, readComponentFile.toString()); 
+            const pathToMainFile = pathName.join(pathToProjectDist, 'index.html');
+            const writeHTML = fs.createWriteStream(pathToMainFile);
+            writeHTML.write(templateContent);
+          }
+          
+        }
+      })
+    }
+});
 
-console.log('\n Подскажите пожалуйста, как заменить содержимое template на содержимое файлов компонентов?\n Пробовал через replace, но не получается\n Поделитесь идеями как это делали вы. Заранее спасибо!\n')
+
+
 
 
 

@@ -1,10 +1,13 @@
 const fsPromises = require('fs').promises;
+const fs = require('fs');
 const pathName = require('path');
 
 const copyFolder = pathName.join(__dirname, 'files');
 const newFolder = pathName.join(__dirname, 'files-copy');
 
 async function copyDir() {
+  
+  await fsPromises.rm(newFolder, {recursive: true, force: true});
   await fsPromises.mkdir(newFolder, { recursive: true }); // создаем новый каталог 
 
   // создаем массив из файлов которые нужно скопировать 
